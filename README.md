@@ -1,1 +1,1 @@
-# LaTeX_cwlPopulator
+Syntax: http://texstudio.sourceforge.net/manual/current/usermanual_en.html#CWLDESCRIPTION
