@@ -113,7 +113,7 @@ void writeToFile(string content, const wchar_t* const pathToFile) {
 		cout << "The file cannot be loaded!\n";
 	}
 	*/
-	fstream inoutfile(pathToFile); // Create output file stream
+	fstream inoutfile(pathToFile, fstream::out); // Create output file stream
 	if (inoutfile) {
 		string inoutFileLine = "";
 		cout << "Success loading file. Commencing writing operation...\n";
@@ -132,7 +132,7 @@ void writeToFile(string content, const wchar_t* const pathToFile) {
 		}
 		// "content" postcondition:
 		// Any packages/commands left are to be added to the .cwl file.
-		if (!content.compare("")) {
+		if (!content.empty()) {
 			istringstream contentStream(content);
 			string contentLine = "";
 			while (getline(contentStream, contentLine)) {
@@ -151,11 +151,12 @@ void writeToFile(string content, const wchar_t* const pathToFile) {
 					//TODO  Do something with the input. Replace arg names in content with user input
 					cout << "TEST: You inputted " << input;
 				}
-			}
-			// Write the changes to the .cwl file and close the stream.
+			} // All the file's content has been read; the stream's state is "eof"; 
+			// Write the changes to the .cwl file. Per C++ standard, stream is closed automatically.
+			inoutfile.clear(); // Reset stream to beginning (state "good") so we can do operations.
 			inoutfile << content;
 		}
-		inoutfile.close();
+		//inoutfile.close();
 	}
 	else {
 		cout << "The file cannot be loaded!\n";
