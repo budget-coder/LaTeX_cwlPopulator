@@ -1,4 +1,4 @@
-#include "OpenDialog.h"
+#include "OpenDialog.hpp"
 using namespace std;
 
 OpenDialog::OpenDialog(COMDLG_FILTERSPEC filter[]) {
