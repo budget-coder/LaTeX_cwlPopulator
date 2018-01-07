@@ -121,7 +121,7 @@ const string scanFileForKeywords(const wchar_t* const pathToFile, unordered_map<
 					//	}
 				}
 				matchedStr = matchedStr.substr(fromIndex, matchedStr.length() - toIndex);
-				cout << "Saving " << prefix + matchedStr << " to list." << endl;
+				//cout << "Saving " << prefix + matchedStr << " to list." << endl;
 				listOfKeywords += prefix + matchedStr + "\n";
 			}
 		}
@@ -134,25 +134,13 @@ const string scanFileForKeywords(const wchar_t* const pathToFile, unordered_map<
 }
 
 void writeToFile(string content, const wchar_t* const pathToFile, unordered_map<string, int> * const cmdArgMap) {
-	/*
-	ofstream outfile(pathToFile, ofstream::app); // Create output file stream
-	if (outfile) {
-		cout << "Success loading file. Commencing writing operation...\n";
-		outfile << content;
-		outfile.close();
-	}
-	else {
-		cout << "The file cannot be loaded!\n";
-	}
-	*/
-	//fstream inoutfile(pathToFile, fstream::in); // Create out file stream. However, this deletes everything...
 	fstream inoutfile(pathToFile); // Create in/out file stream
 	if (inoutfile) {
 		string inoutFileLine = "";
 		cout << "Success loading file. Commencing writing operation...\n";
-		streamsize noOfCharsProcessed = 0;
+		//streamsize noOfCharsProcessed = 0;
 		while (getline(inoutfile, inoutFileLine)) {
-			noOfCharsProcessed += inoutFileLine.length() + 2; // 2 for LF CR
+			//noOfCharsProcessed += inoutFileLine.length() + 2; // 2 for LF CR
 			// string::find() returns string::npos when there is no match
 			// string::npos is defined as -1.
 			size_t pos = content.find(inoutFileLine);
@@ -174,7 +162,7 @@ void writeToFile(string content, const wchar_t* const pathToFile, unordered_map<
 			while (getline(contentStream, inoutFileLine)) {
 				//noOfCharsProcessed += contentLine.length() + 2; // 2 for \n
 				if (0 == inoutFileLine.find('\\')) {
-					cout << "Command found. Can I find the command " << inoutFileLine << endl;
+					//cout << "Command found. Can I find the command " << inoutFileLine << endl;
 					unordered_map<string, int>::const_iterator valueToKey = (*cmdArgMap).find(inoutFileLine);
 					if (valueToKey != (*cmdArgMap).end()) {
 						// Print out the command with args to the user.
@@ -185,22 +173,22 @@ void writeToFile(string content, const wchar_t* const pathToFile, unordered_map<
 						}
 						cout << "New command " << inoutFileLine + args <<
 							" found in .sty which does not exist in .cwl! \n" <<
-							"As you can see, each arg has a temporary name. " <<
+							"As you can see, each arg has a temporary name. \n" <<
 							"You can name each arg by typing a name for each of them " <<
 							"separated with a space. \n" <<
 							"If you want the temp. name for some arg, then type " <<
 							"'-' for that arg.\n";
-						//size_t pos = content.find(inoutFileLine); // Start pos. of the current CMD (incl. line-feed)
+						const size_t pos = content.find(inoutFileLine); // Start pos. of the current CMD (incl. line-feed)
+						args = "";
 						for (size_t i = 0; i < noOfArgs; i++) {
-							inoutFileLine += "{"  + enterOptionalArgument() + "}";
+							args += "{"  + enterOptionalArgument() + "}";
 						}
 						// Replace the command line with the args.
 						
-						cout << "TEST. BEFORE SAVING, THIS IS THE CURRENT LOCATION OF COMMAND: " << noOfCharsProcessed << ". TRUE?" << endl;
-						//cout << "TEST. BEFORE SAVING, THIS IS THE CURRENT LOCATION OF COMMAND: " << pos << ". TRUE?" << endl;
-						//size_t wordLength = inoutFileLine.length();
-						//size_t secondNL = content.find('\n', pos);
-						//content.replace(secondNL - wordLength, wordLength + 1); // +1 for deleting '\n'
+						//cout << "TEST. BEFORE SAVING, THIS IS THE CURRENT LOCATION OF COMMAND: " << noOfCharsProcessed << ". TRUE?" << endl;
+						cout << "TEST. BEFORE SAVING, THIS IS THE CURRENT LOCATION OF COMMAND: " << pos << ". TRUE?" << endl;
+						const size_t wordLength = inoutFileLine.length();
+						content.insert(pos + wordLength, args); // insert args.
 					}
 				}
 			} // All the file's content has been read; the stream's state is "eof"; 
@@ -218,6 +206,6 @@ const string enterOptionalArgument() {
 	string input = "";
 	// Read input from user
 	getline(cin, input);
-	cout << "TEST: You inputted " << input << endl;
+	//cout << "TEST: You inputted " << input << endl;
 	return input;
 }
