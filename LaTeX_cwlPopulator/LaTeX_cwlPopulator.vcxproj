@@ -148,7 +148,7 @@
     <ClCompile Include="OpenDialog.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="OpenDialog.h" />
+    <ClInclude Include="OpenDialog.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />

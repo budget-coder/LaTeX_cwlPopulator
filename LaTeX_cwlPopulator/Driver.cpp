@@ -12,7 +12,7 @@
 //#include <boost/regex.hpp>
 #include <unordered_map>
 
-#include "OpenDialog.h"
+#include "OpenDialog.hpp"
 
 using namespace std;
 //using namespace boost;
@@ -20,7 +20,6 @@ using namespace std;
 void replaceAllCharXWithCharY(wchar_t* path, const char X, const char Y);
 const string scanFileForKeywords(const wchar_t* const pathToFile, unordered_map<string, int> * const cmdArgMap);
 void writeToFile(string content, const wchar_t* const pathToFile, unordered_map<string, int> * const cmdArgMap);
-const string enterOptionalArgument();
 
 int main() {
 	// To display the path correctly on cmd.
@@ -51,7 +50,7 @@ int main() {
 	replaceAllCharXWithCharY(pathToCwl, '\\', '/');
 	// Now to read the packages and commands from the .sty file.
 	const string listOfKeywords = scanFileForKeywords(pathToSty, &cmdArgMap);
-	// If everything went well, then we will write the content to the .cwl file
+	// If everything went well, then we will write the content to the .cwl file.
 	if (listOfKeywords != "") {
 		writeToFile(listOfKeywords, pathToCwl, &cmdArgMap);
 	}
@@ -116,9 +115,6 @@ const string scanFileForKeywords(const wchar_t* const pathToFile, unordered_map<
 					const int noOfArgs = stoi(matchedArg.substr(1, matchedArg.length() - 1)); // remove "[]" from arg
 					//	cout << noOfArgs << " arguments were found for " << matchedStr.substr(fromIndex, matchedStr.length() - oIndex) << endl;
 					(*cmdArgMap)[matchedStr.substr(fromIndex, matchedStr.length() - toIndex)] = noOfArgs;
-					//	for (size_t i = 0; i < noOfArgs; i++) {
-					//		enterOptionalArgument();
-					//	}
 				}
 				matchedStr = matchedStr.substr(fromIndex, matchedStr.length() - toIndex);
 				//cout << "Saving " << prefix + matchedStr << " to list." << endl;
@@ -140,10 +136,20 @@ void writeToFile(string content, const wchar_t* const pathToFile, unordered_map<
 		cout << "Success loading file. Commencing writing operation...\n";
 		//streamsize noOfCharsProcessed = 0;
 		while (getline(inoutfile, inoutFileLine)) {
+			if (inoutFileLine == "") { // Empty \n. Skip
+				continue;
+			}
 			//noOfCharsProcessed += inoutFileLine.length() + 2; // 2 for LF CR
+
+			// If inoutFileLine is a command w. args, we have to remove them.
+			// The commands from the .sty file do not have any args after all.
+			size_t pos = inoutFileLine.find('{');
 			// string::find() returns string::npos when there is no match
 			// string::npos is defined as -1.
-			size_t pos = content.find(inoutFileLine);
+			if (pos != string::npos) {
+				inoutFileLine = inoutFileLine.substr(0, pos); // Remove args if any.
+			}
+			pos = content.find(inoutFileLine); // Now to search for real.
 			if (pos != string::npos) {
 				// Match found! Delete line in content by getting
 				// the pos of the next newline and the word length
@@ -175,20 +181,23 @@ void writeToFile(string content, const wchar_t* const pathToFile, unordered_map<
 							" found in .sty which does not exist in .cwl! \n" <<
 							"As you can see, each arg has a temporary name. \n" <<
 							"You can name each arg by typing a name for each of them " <<
-							"separated with a space. \n" <<
+							"one at a time. \n" <<
 							"If you want the temp. name for some arg, then type " <<
 							"'-' for that arg.\n";
-						const size_t pos = content.find(inoutFileLine); // Start pos. of the current CMD (incl. line-feed)
 						args = "";
-						for (size_t i = 0; i < noOfArgs; i++) {
-							args += "{"  + enterOptionalArgument() + "}";
+						for (size_t i = 1; i <= noOfArgs; i++) {
+							cout << "Please input arg " << i << "'s name: ";
+							string input = "";
+							getline(cin, input);
+							args += "{"  + input + "}";
 						}
 						// Replace the command line with the args.
 						
+						const size_t pos = content.find(inoutFileLine); // Start pos. of the current CMD (incl. line-feed)
 						//cout << "TEST. BEFORE SAVING, THIS IS THE CURRENT LOCATION OF COMMAND: " << noOfCharsProcessed << ". TRUE?" << endl;
 						cout << "TEST. BEFORE SAVING, THIS IS THE CURRENT LOCATION OF COMMAND: " << pos << ". TRUE?" << endl;
 						const size_t wordLength = inoutFileLine.length();
-						content.insert(pos + wordLength, args); // insert args.
+						content.insert(pos + wordLength, args); // insert args after the CMD.
 					}
 				}
 			} // All the file's content has been read; the stream's state is "eof"; 
@@ -200,12 +209,4 @@ void writeToFile(string content, const wchar_t* const pathToFile, unordered_map<
 	else {
 		cout << "The file cannot be loaded!\n";
 	}
-}
-
-const string enterOptionalArgument() {
-	string input = "";
-	// Read input from user
-	getline(cin, input);
-	//cout << "TEST: You inputted " << input << endl;
-	return input;
 }
