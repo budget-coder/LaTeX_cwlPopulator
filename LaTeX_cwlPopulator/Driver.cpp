@@ -100,24 +100,17 @@ const string scanFileForKeywords(const wchar_t* const pathToFile, unordered_map<
 			}
 			// Regex-match the line for any keyword, Take the first match and add it.
 			if (regex_search(line, arrayOfMatches, pattern)) {
-				string matchedStr;
-				
+				string matchedStr = "";
 				if (arrayOfMatches.size() == 1 || arrayOfMatches[2] == "") { // Only 1 match
 					matchedStr = arrayOfMatches[0];
 				}
 				else {
 					matchedStr = arrayOfMatches[1];
-					//cout << "Matched CMD: " << matchedStr << endl;
 					const string matchedArg = arrayOfMatches[2];
-					//cout << "No. of matches: " << arrayOfMatches.size() << ". Multiple matches. Group 1: " << matchedStr << ". Group 2: " << matchedArg << endl;
-					//cout << "No. of args: " << matchedArg.length() << endl;
-					//cout << "Matched command: " << arrayOfMatches.str(1) << "." << endl;
 					const int noOfArgs = stoi(matchedArg.substr(1, matchedArg.length() - 1)); // remove "[]" from arg
-					//	cout << noOfArgs << " arguments were found for " << matchedStr.substr(fromIndex, matchedStr.length() - oIndex) << endl;
 					(*cmdArgMap)[matchedStr.substr(fromIndex, matchedStr.length() - toIndex)] = noOfArgs;
 				}
 				matchedStr = matchedStr.substr(fromIndex, matchedStr.length() - toIndex);
-				//cout << "Saving " << prefix + matchedStr << " to list." << endl;
 				listOfKeywords += prefix + matchedStr + "\n";
 			}
 		}
@@ -134,13 +127,10 @@ void writeToFile(string content, const wchar_t* const pathToFile, unordered_map<
 	if (inoutfile) {
 		string inoutFileLine = "";
 		cout << "Success loading file. Commencing writing operation...\n";
-		//streamsize noOfCharsProcessed = 0;
 		while (getline(inoutfile, inoutFileLine)) {
-			if (inoutFileLine == "") { // Empty \n. Skip
+			if (inoutFileLine == "") { // Empty '\n'. Skip
 				continue;
 			}
-			//noOfCharsProcessed += inoutFileLine.length() + 2; // 2 for LF CR
-
 			// If inoutFileLine is a command w. args, we have to remove them.
 			// The commands from the .sty file do not have any args after all.
 			size_t pos = inoutFileLine.find('{');
@@ -162,16 +152,12 @@ void writeToFile(string content, const wchar_t* const pathToFile, unordered_map<
 		// Any packages/commands left are to be added to the .cwl file.
 		if (!content.empty()) {
 			istringstream contentStream(content);
-			// Find commands with arguments and let the user fill them out.
 			inoutFileLine = "";
-			//streamsize noOfCharsProcessed = 0; // streamsize is an integral type (i.e. "some integer type").
+			// Find commands with arguments and let the user fill them out.
 			while (getline(contentStream, inoutFileLine)) {
-				//noOfCharsProcessed += contentLine.length() + 2; // 2 for \n
 				if (0 == inoutFileLine.find('\\')) {
-					//cout << "Command found. Can I find the command " << inoutFileLine << endl;
 					unordered_map<string, int>::const_iterator valueToKey = (*cmdArgMap).find(inoutFileLine);
 					if (valueToKey != (*cmdArgMap).end()) {
-						// Print out the command with args to the user.
 						const size_t noOfArgs = valueToKey->second;
 						string args = "";
 						for (size_t i = 0; i < noOfArgs; i++) {
@@ -198,10 +184,7 @@ void writeToFile(string content, const wchar_t* const pathToFile, unordered_map<
 							args += "{"  + input + "}";
 						}
 						// Replace the command line with the args.
-						
 						const size_t pos = content.find(inoutFileLine); // Start pos. of the current CMD (incl. line-feed)
-						//cout << "TEST. BEFORE SAVING, THIS IS THE CURRENT LOCATION OF COMMAND: " << noOfCharsProcessed << ". TRUE?" << endl;
-						//cout << "TEST. BEFORE SAVING, THIS IS THE CURRENT LOCATION OF COMMAND: " << pos << ". TRUE?" << endl;
 						const size_t wordLength = inoutFileLine.length();
 						content.insert(pos + wordLength, args); // insert args after the CMD.
 					}
@@ -210,7 +193,6 @@ void writeToFile(string content, const wchar_t* const pathToFile, unordered_map<
 			inoutfile.clear(); // Reset stream to beginning (state "good") so we can do operations.
 			inoutfile << content; // Write the changes to the .cwl file. Per C++ standard, stream is closed automatically.
 		}
-		//inoutfile.close();
 	}
 	else {
 		cout << "The file cannot be loaded!\n";
