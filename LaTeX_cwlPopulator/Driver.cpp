@@ -189,13 +189,19 @@ void writeToFile(string content, const wchar_t* const pathToFile, unordered_map<
 							cout << "Please input arg " << i << "'s name: ";
 							string input = "";
 							getline(cin, input);
+							if (input == "-") { // Fill the rest with default.
+								for (size_t j = 0; j <= noOfArgs - i; j++) {
+									args += "{expr}";
+								}
+								break;
+							}
 							args += "{"  + input + "}";
 						}
 						// Replace the command line with the args.
 						
 						const size_t pos = content.find(inoutFileLine); // Start pos. of the current CMD (incl. line-feed)
 						//cout << "TEST. BEFORE SAVING, THIS IS THE CURRENT LOCATION OF COMMAND: " << noOfCharsProcessed << ". TRUE?" << endl;
-						cout << "TEST. BEFORE SAVING, THIS IS THE CURRENT LOCATION OF COMMAND: " << pos << ". TRUE?" << endl;
+						//cout << "TEST. BEFORE SAVING, THIS IS THE CURRENT LOCATION OF COMMAND: " << pos << ". TRUE?" << endl;
 						const size_t wordLength = inoutFileLine.length();
 						content.insert(pos + wordLength, args); // insert args after the CMD.
 					}
