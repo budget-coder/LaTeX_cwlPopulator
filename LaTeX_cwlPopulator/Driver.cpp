@@ -84,16 +84,20 @@ const string scanFileForKeywords(const wchar_t* const pathToFile, unordered_map<
 			smatch arrayOfMatches; // instantiation of std::match_results.
 			regex pattern;
 			string prefix = "";
-			size_t fromIndex = 2; // ignore "e{" or "d" in front.
-			size_t toIndex = fromIndex + 1; // ignore "e{" or "d{" in front and '}' and at the end.
+			//size_t fromIndex = 2; // ignore "e{" or "d{" in front.
+			const size_t fromIndex = 1; // ignore "{" or "d" in front.
+			const size_t toIndex = fromIndex + 1; // ignore '{' or 'd' in front and '}' and at the end.
 			if (0 == line.find("\\RequirePackage")) {
-				pattern = "[\\]|e]\\{.+?\\}";
+				pattern = "[\\]|e](\\{.+?\\})";
 				prefix = "#include:";
 			}
-			else if (0 == line.find("\\newcommand")) {
+			else if (line.find("\\newcommandx") == 0) {
 				// two patterns seperated by '|'. EITHER we match the first pattern (w. args)
 				// in two capturing groups or the second (w/o args) in none.
-				pattern = "(d\\{.+?\\})(\\[\\d*\\])|d\\{.+?\\}";
+				pattern = "x(\\{.+?\\})(\\[\\d*\\])|d(\\{.+?\\})";
+			}
+			else if (line.find("\\newcommand") == 0) {
+				pattern = "d(\\{.+?\\})(\\[\\d*\\])|d(\\{.+?\\})";
 			}
 			else {
 				continue;
@@ -101,8 +105,14 @@ const string scanFileForKeywords(const wchar_t* const pathToFile, unordered_map<
 			// Regex-match the line for any keyword, Take the first match and add it.
 			if (regex_search(line, arrayOfMatches, pattern)) {
 				string matchedStr = "";
-				if (arrayOfMatches.size() == 1 || arrayOfMatches[2] == "") { // Only 1 match
+				if (arrayOfMatches.size() == 1) { // TODO Useless if? Maybe combine all ifs (with smarter pattern)?
 					matchedStr = arrayOfMatches[0];
+				}
+				else if (arrayOfMatches.size() == 2) { // package
+					matchedStr = arrayOfMatches[1];
+				}
+				else if (arrayOfMatches.size() == 4 && arrayOfMatches[2] == "") { // Only 1 match
+					matchedStr = arrayOfMatches[3];
 				}
 				else {
 					matchedStr = arrayOfMatches[1];
@@ -163,8 +173,8 @@ void writeToFile(string content, const wchar_t* const pathToFile, unordered_map<
 						for (size_t i = 0; i < noOfArgs; i++) {
 							args += "{expr}";
 						}
-						cout << "New command " << inoutFileLine + args <<
-							" found in .sty which does not exist in .cwl! \n" <<
+						cout << "New command \033[1;33m" << inoutFileLine + args <<
+							"\033[0m found in .sty which does not exist in .cwl! \n" <<
 							"As you can see, each arg has a temporary name. \n" <<
 							"You can name each arg by typing a name for each of them " <<
 							"one at a time. \n" <<
